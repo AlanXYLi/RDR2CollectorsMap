@@ -95,7 +95,7 @@ function init() {
   });
 
   if (typeof $.cookie('map-layer') === 'undefined' || isNaN(parseInt($.cookie('map-layer'))))
-    $.cookie('map-layer', 1, { expires: 999 });
+    $.cookie('map-layer', 3, { expires: 999 });
 
   if (!Language.availableLanguages.includes(Settings.language))
     Settings.language = 'en-us';

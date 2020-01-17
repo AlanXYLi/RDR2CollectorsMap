@@ -7,7 +7,8 @@ var Layers = {
   miscLayer: new L.LayerGroup(),
   encountersLayer: new L.LayerGroup(),
   pinsLayer: new L.LayerGroup(),
-  oms: null
+  oms: null,
+  mapLayers: null
 };
 
 var MapBase = {
@@ -20,7 +21,7 @@ var MapBase = {
   init: function () {
 
     //Please, do not use the GitHub map tiles. Thanks
-    var mapLayers = [
+    Layers.mapLayers = [
       L.tileLayer('https://s.rsg.sc/sc/images/games/RDR2/map/game/{z}/{x}/{y}.jpg', {
         noWrap: true,
         bounds: L.latLngBounds(L.latLng(-144, 0), L.latLng(0, 176))
@@ -32,6 +33,10 @@ var MapBase = {
       L.tileLayer((isLocalHost() ? 'assets/maps/' : 'https://jeanropke.b-cdn.net/') +'darkmode/{z}/{x}_{y}.jpg', {
         noWrap: true,
         bounds: L.latLngBounds(L.latLng(-144, 0), L.latLng(0, 176))
+      }),
+      L.tileLayer('https://s.rsg.sc/sc/images/games/RDR2/map/game/{z}/{x}/{y}.jpg', {
+        noWrap: true,
+        bounds: L.latLngBounds(L.latLng(-144, 0), L.latLng(0, 176))
       })
     ];
 
@@ -41,7 +46,7 @@ var MapBase = {
       maxZoom: this.maxZoom,
       zoomControl: false,
       crs: L.CRS.Simple,
-      layers: [mapLayers[parseInt($.cookie('map-layer'))]]
+      layers: [Layers.mapLayers[parseInt($.cookie('map-layer'))]]
     }).setView([-70, 111.75], 3);
 
     L.control.zoom({
@@ -49,9 +54,10 @@ var MapBase = {
     }).addTo(MapBase.map);
 
     var baseMapsLayers = {
-      'map.layers.default': mapLayers[0],
-      'map.layers.detailed': mapLayers[1],
-      'map.layers.dark': mapLayers[2]
+      'map.layers.default': Layers.mapLayers[0],
+      'map.layers.detailed': Layers.mapLayers[1],
+      'map.layers.dark': Layers.mapLayers[2],
+      'map.layers.detailedPath': Layers.mapLayers[3],
     };
 
     L.control.layers(baseMapsLayers).addTo(MapBase.map);
@@ -63,12 +69,15 @@ var MapBase = {
         case 'map.layers.default':
           mapIndex = 0;
           break;
+        case 'map.layers.detailed':
+          mapIndex = 1;
+          break;
         case 'map.layers.dark':
           mapIndex = 2;
           break;
-        case 'map.layers.detailed':
+        case 'map.layers.detailedPath':
         default:
-          mapIndex = 1;
+          mapIndex = 3;
           break;
       }
 
@@ -90,6 +99,19 @@ var MapBase = {
     });
 
     MapBase.loadOverlays();
+
+  },
+
+  drawRoads: function (paths, layer, color, weight, opacity){
+      if(typeof(color) === 'undefined') color = '#FFFFFF';
+
+      if(typeof(weight) !== 'number') weight = 5;
+      if(typeof(opacity) !== 'number') opacity = 1;
+      if(typeof(layer) === 'undefined') layer = MapBase.map;
+
+      for(var i = 0; i < paths.length; i++) {
+        L.geoJSON(paths[i]).addTo(layer);
+      }
 
   },
 
