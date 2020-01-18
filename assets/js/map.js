@@ -8,7 +8,8 @@ var Layers = {
   encountersLayer: new L.LayerGroup(),
   pinsLayer: new L.LayerGroup(),
   oms: null,
-  mapLayers: null
+  mapLayers: null,
+  roadLayer: null,
 };
 
 var MapBase = {
@@ -34,10 +35,10 @@ var MapBase = {
         noWrap: true,
         bounds: L.latLngBounds(L.latLng(-144, 0), L.latLng(0, 176))
       }),
-      L.tileLayer('https://s.rsg.sc/sc/images/games/RDR2/map/game/{z}/{x}/{y}.jpg', {
+      L.layerGroup().addLayer(L.tileLayer('https://s.rsg.sc/sc/images/games/RDR2/map/game/{z}/{x}/{y}.jpg', {
         noWrap: true,
         bounds: L.latLngBounds(L.latLng(-144, 0), L.latLng(0, 176))
-      })
+      }))
     ];
 
     MapBase.map = L.map('map', {
@@ -88,6 +89,10 @@ var MapBase = {
       MapBase.addCoordsOnMap(e);
     });
 
+    MapBase.map.on('zoomend', function() {
+      MapBase.drawRoads(PathFinder._geoJson.features, Layers.mapLayers[3], '#000000', Math.pow(2,MapBase.map.getZoom())/12.8)
+    });
+
     var southWest = L.latLng(-160, -50),
       northEast = L.latLng(25, 250),
       bounds = L.latLngBounds(southWest, northEast);
@@ -102,17 +107,24 @@ var MapBase = {
 
   },
 
-  drawRoads: function (paths, layer, color, weight, opacity){
-      if(typeof(color) === 'undefined') color = '#FFFFFF';
+  drawRoads: function (paths, hybridLayer, color, weight, opacity){
+    if(typeof(color) === 'undefined') color = '#FFFFFF';
+    if(typeof(weight) !== 'number') weight = 5;
+    if(typeof(opacity) !== 'number') opacity = 1;
+    if(typeof(hybridLayer) === 'undefined') hybridLayer = MapBase.map;
 
-      if(typeof(weight) !== 'number') weight = 5;
-      if(typeof(opacity) !== 'number') opacity = 1;
-      if(typeof(layer) === 'undefined') layer = MapBase.map;
+    if (Layers.roadLayer !== null) hybridLayer.removeLayer(Layers.roadLayer);
+    Layers.roadLayer=L.layerGroup([]).addTo(hybridLayer);
 
-      for(var i = 0; i < paths.length; i++) {
-        L.geoJSON(paths[i]).addTo(layer);
+    for(let j = 0; j < paths.length; j++) {
+      let path = paths[j].geometry.coordinates.map(function(e) {return [e[1], e[0]]});
+      let pathGroup = L.layerGroup().addTo(Layers.roadLayer);
+      let last = path[0];
+      for(let i = 1; i < path.length; i++) {
+        L.polyline([last, path[i]], {color: color, opacity: opacity, weight: weight}).addTo(pathGroup);
+        last = path[i];
       }
-
+    }
   },
 
   loadOverlays: function () {

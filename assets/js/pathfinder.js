@@ -39,7 +39,7 @@ async function loadAllGeoJson() {
 	var completeGeoJsonFT = Object.assign({}, completeGeoJson)
 	completeGeoJsonFT.features = completeGeoJson.features.concat(fasttravel.features)
 	PathFinder._geoJsonFT = completeGeoJsonFT
-	MapBase.drawRoads(completeGeoJson.features, MapBase.map, '#000000')
+	MapBase.drawRoads(completeGeoJson.features, Layers.mapLayers[3], '#000000', Math.pow(2,MapBase.map.getZoom())/12.8)
 }
 
 
