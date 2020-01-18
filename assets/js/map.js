@@ -139,18 +139,18 @@ var MapBase = {
     }
 
     $.cookie('map-layer', MapBase.mapIndex, { expires: 999 });
+    MapBase.drawRoads();
   },
 
   drawRoads: function (){
-    if (MapBase.mapIndex>=3) {
+    if (Layers.roadLayer !== null) MapBase.map.removeLayer(Layers.roadLayer);
+    if (MapBase.mapIndex>=3 && PathFinder._geoJson !==null) {
       let paths = PathFinder._geoJson.features;
       let color = "#000000";
       let weight = Math.pow(2, MapBase.map.getZoom()) / 12.8;
       let opacity = 1;
 
-      if (Layers.roadLayer !== null) MapBase.map.removeLayer(Layers.roadLayer);
       Layers.roadLayer = L.layerGroup([]).addTo(MapBase.map);
-
       for (let j = 0; j < paths.length; j++) {
         let path = paths[j].geometry.coordinates.map(function (e) {
           return [e[1], e[0]]
