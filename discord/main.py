@@ -91,5 +91,5 @@ if __name__ == "__main__":
         cycle_loop.enterabs(next_start_time, 1, reset_cycle, argument=(next_start_time,))
     reset_cycle(time.time())
 
-    #cycle_loop.run()
+    cycle_loop.run(blocking=False)
     client.run(TOKENS.token)
