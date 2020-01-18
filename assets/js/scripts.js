@@ -131,8 +131,6 @@ function init() {
   MapBase.init();
   Language.setMenuLanguage();
 
-  setMapBackground($.cookie('map-layer'));
-
   if (Settings.isMenuOpened)
     $('.menu-toggle').click();
 

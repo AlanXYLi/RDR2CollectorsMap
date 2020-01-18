@@ -119,18 +119,21 @@ var MapBase = {
   setMapBackground: function() {
     switch (MapBase.mapIndex) {
       case 2:
-        $('#map').removeClass("dark-mode");
+        $('.leaflet-tile-pane').removeClass("dark-mode");
+        $('.leaflet-overlay-pane').removeClass("dark-mode");
         $('#map').css('background-color', '#3d3d3d');
         break;
       case 4:
-        $('#map').addClass("dark-mode");
-        $('#map').css('background-color', '#d2b790');
+        $('.leaflet-tile-pane').addClass("dark-mode");
+        $('.leaflet-overlay-pane').addClass("dark-mode");
+        $('#map').css('background-color', '#3d3d3d');
         break;
       case 0:
       case 1:
       case 3:
       default:
-        $('#map').removeClass("dark-mode");
+        $('.leaflet-tile-pane').removeClass("dark-mode");
+        $('.leaflet-overlay-pane').removeClass("dark-mode");
         $('#map').css('background-color', '#d2b790');
         break;
     }
@@ -139,21 +142,25 @@ var MapBase = {
   },
 
   drawRoads: function (){
-    let paths=PathFinder._geoJson.features;
-    let color = "#000000";
-    let weight = Math.pow(2,MapBase.map.getZoom())/12.8;
-    let opacity = 1;
+    if (MapBase.mapIndex>=3) {
+      let paths = PathFinder._geoJson.features;
+      let color = "#000000";
+      let weight = Math.pow(2, MapBase.map.getZoom()) / 12.8;
+      let opacity = 1;
 
-    if (Layers.roadLayer !== null) hybridLayer.removeLayer(Layers.roadLayer);
-    Layers.roadLayer=L.layerGroup([]).addTo(hybridLayer);
+      if (Layers.roadLayer !== null) MapBase.map.removeLayer(Layers.roadLayer);
+      Layers.roadLayer = L.layerGroup([]).addTo(MapBase.map);
 
-    for(let j = 0; j < paths.length; j++) {
-      let path = paths[j].geometry.coordinates.map(function(e) {return [e[1], e[0]]});
-      let pathGroup = L.layerGroup().addTo(Layers.roadLayer);
-      let last = path[0];
-      for(let i = 1; i < path.length; i++) {
-        L.polyline([last, path[i]], {color: color, opacity: opacity, weight: weight}).addTo(pathGroup);
-        last = path[i];
+      for (let j = 0; j < paths.length; j++) {
+        let path = paths[j].geometry.coordinates.map(function (e) {
+          return [e[1], e[0]]
+        });
+        let pathGroup = L.layerGroup().addTo(Layers.roadLayer);
+        let last = path[0];
+        for (let i = 1; i < path.length; i++) {
+          L.polyline([last, path[i]], {color: color, opacity: opacity, weight: weight}).addTo(pathGroup);
+          last = path[i];
+        }
       }
     }
   },
