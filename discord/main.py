@@ -12,6 +12,7 @@ currentCycle = Cycle()
 
 HELP_MSG = "Valid collection names are: " + ", ".join(COLLECTIONS) + "\n"\
            "To report all of today's cycle in the order listed above: $cycle 1,2,3,4,5,6,5,4,3 \n"\
+            "\t You can enter either a partial list or complete list, $cycle 1,2,3 will only update first three. \n"\
            "To report some of today's cycle: $cycle name,name,...name num,num,...num \n" \
             "\t Example 1: $cycle loom 3 will report heirloom is on cycle 3 \n" \
             "\t Example 2: $cycle flower,loom,egg 3,2,1 will report flower on cycle 3, loom on  2 and egg on 1 \n"\
@@ -32,39 +33,35 @@ async def on_message(message):
         await message.channel.send('Hello!')
         return
 
-    if message.channel.type is not discord.ChannelType.private:
-        return
+    # if message.channel.type is not discord.ChannelType.private:
+    #     return
 
     if message.content.startswith('$help'):
         await message.channel.send(HELP_MSG)
         return
 
     if message.content.startswith('$cycle '):
-        response = {}
         user_level = 1
         try:
             tokens = message.content.split()[1:]
             if len(tokens) == 1:
-                cycle_list = tokens[0].split(",")
-                for i, c in enumerate(COLLECTIONS):
-                    response[c] = cycle_list[i]
+                currentCycle.update(zip(COLLECTIONS, tokens[0].split(",")), user_level)
             elif len(tokens) == 2:
-                response = zip(tokens[0].split(","), tokens[1].split(","))
+                currentCycle.update(zip(tokens[0].split(","), tokens[1].split(",")), user_level)
             else:
                 await message.channel.send(ERR_MSG)
-            currentCycle.update(response, user_level)
             await message.channel.send('Updated!')
             return
         except:
             await message.channel.send(ERR_MSG)
         return
 
-    if message.content.startswith('$maplink '):
+    if message.content.startswith('$maplink'):
         currentCycle.check_stats()
         await message.channel.send(currentCycle.verbose())
         return
 
-    if message.content.startswith('$statsdbg '):
+    if message.content.startswith('$statsdbg'):
         currentCycle.check_stats()
         await message.channel.send(str(currentCycle))
         return
@@ -83,7 +80,7 @@ if __name__ == "__main__":
     cycle_loop = sched.scheduler(time.time, time.sleep)
 
     def reset_cycle(start_time):
-        print("reset")
+        print("Cycle reset at ", datetime.fromtimestamp(start_time))
         currentCycle = Cycle()
         utcnow = datetime.utcnow()
         utctomorrow = (datetime.utcnow() + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)

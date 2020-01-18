@@ -37,8 +37,8 @@ class Cycle:
         self.check_stats()
         return str(self.stats["top_choices"])+str(self.stats["top_votes"])+str(self.stats["second_top_votes"])
 
-    def update(self, response_map, user_level):
-        for c, vote in response_map.items():
+    def update(self, response_tuples, user_level):
+        for c, vote in response_tuples:
             self.currentCycle[c][vote] += user_level
 
     def check_stats(self):
