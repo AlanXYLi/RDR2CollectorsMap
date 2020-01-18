@@ -1,3 +1,8 @@
+.dark-mode {
+    filter: grayscale(100%) saturate(200) brightness(90%) invert(90%);
+    -webkit-filter: grayscale(100%) saturate(200) brightness(90%) invert(90%);
+}
+
 @font-face {
     font-family: Hapna;
     src: url(../fonts/hapna.woff2) format("woff2"), url(../fonts/hapna.woff) format("woff"), url(../fonts/hapna.ttf) format("truetype");

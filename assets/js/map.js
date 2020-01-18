@@ -18,6 +18,7 @@ var MapBase = {
   map: null,
   overlays: [],
   markers: [],
+  mapIndex: $.cookie('map-layer') ? parseInt($.cookie('map-layer')) : 3,
 
   init: function () {
 
@@ -31,10 +32,14 @@ var MapBase = {
         noWrap: true,
         bounds: L.latLngBounds(L.latLng(-144, 0), L.latLng(0, 176))
       }),
-      L.tileLayer((isLocalHost() ? 'assets/maps/' : 'https://jeanropke.b-cdn.net/') +'darkmode/{z}/{x}_{y}.jpg', {
+      L.tileLayer((isLocalHost() ? 'assets/maps/' : 'https://jeanropke.b-cdn.net/') + 'darkmode/{z}/{x}_{y}.jpg', {
         noWrap: true,
         bounds: L.latLngBounds(L.latLng(-144, 0), L.latLng(0, 176))
       }),
+      L.layerGroup().addLayer(L.tileLayer('https://s.rsg.sc/sc/images/games/RDR2/map/game/{z}/{x}/{y}.jpg', {
+        noWrap: true,
+        bounds: L.latLngBounds(L.latLng(-144, 0), L.latLng(0, 176))
+      })),
       L.layerGroup().addLayer(L.tileLayer('https://s.rsg.sc/sc/images/games/RDR2/map/game/{z}/{x}/{y}.jpg', {
         noWrap: true,
         bounds: L.latLngBounds(L.latLng(-144, 0), L.latLng(0, 176))
@@ -47,7 +52,7 @@ var MapBase = {
       maxZoom: this.maxZoom,
       zoomControl: false,
       crs: L.CRS.Simple,
-      layers: [Layers.mapLayers[parseInt($.cookie('map-layer'))]]
+      layers: [Layers.mapLayers[MapBase.mapIndex]]
     }).setView([-70, 111.75], 3);
 
     L.control.zoom({
@@ -59,30 +64,33 @@ var MapBase = {
       'map.layers.detailed': Layers.mapLayers[1],
       'map.layers.dark': Layers.mapLayers[2],
       'map.layers.detailedPath': Layers.mapLayers[3],
+      'map.layers.detailedPathDark': Layers.mapLayers[4],
     };
 
     L.control.layers(baseMapsLayers).addTo(MapBase.map);
 
+    MapBase.setMapBackground();
     MapBase.map.on('baselayerchange', function (e) {
-      var mapIndex;
-
       switch (e.name) {
         case 'map.layers.default':
-          mapIndex = 0;
+          MapBase.mapIndex = 0;
           break;
         case 'map.layers.detailed':
-          mapIndex = 1;
+          MapBase.mapIndex = 1;
           break;
         case 'map.layers.dark':
-          mapIndex = 2;
+          MapBase.mapIndex = 2;
           break;
         case 'map.layers.detailedPath':
         default:
-          mapIndex = 3;
+          MapBase.mapIndex = 3;
+          break;
+        case 'map.layers.detailedPathDark':
+          MapBase.mapIndex = 4;
           break;
       }
 
-      setMapBackground(mapIndex);
+      MapBase.setMapBackground();
     });
 
     MapBase.map.on('click', function (e) {
@@ -90,7 +98,7 @@ var MapBase = {
     });
 
     MapBase.map.on('zoomend', function() {
-      MapBase.drawRoads(PathFinder._geoJson.features, Layers.mapLayers[3], '#000000', Math.pow(2,MapBase.map.getZoom())/12.8)
+      MapBase.drawRoads()
     });
 
     var southWest = L.latLng(-160, -50),
@@ -107,11 +115,34 @@ var MapBase = {
 
   },
 
-  drawRoads: function (paths, hybridLayer, color, weight, opacity){
-    if(typeof(color) === 'undefined') color = '#FFFFFF';
-    if(typeof(weight) !== 'number') weight = 5;
-    if(typeof(opacity) !== 'number') opacity = 1;
-    if(typeof(hybridLayer) === 'undefined') hybridLayer = MapBase.map;
+
+  setMapBackground: function() {
+    switch (MapBase.mapIndex) {
+      case 2:
+        $('#map').removeClass("dark-mode");
+        $('#map').css('background-color', '#3d3d3d');
+        break;
+      case 4:
+        $('#map').addClass("dark-mode");
+        $('#map').css('background-color', '#d2b790');
+        break;
+      case 0:
+      case 1:
+      case 3:
+      default:
+        $('#map').removeClass("dark-mode");
+        $('#map').css('background-color', '#d2b790');
+        break;
+    }
+
+    $.cookie('map-layer', MapBase.mapIndex, { expires: 999 });
+  },
+
+  drawRoads: function (){
+    let paths=PathFinder._geoJson.features;
+    let color = "#000000";
+    let weight = Math.pow(2,MapBase.map.getZoom())/12.8;
+    let opacity = 1;
 
     if (Layers.roadLayer !== null) hybridLayer.removeLayer(Layers.roadLayer);
     Layers.roadLayer=L.layerGroup([]).addTo(hybridLayer);

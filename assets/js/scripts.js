@@ -153,25 +153,6 @@ function isLocalHost() {
    return location.hostname === "localhost" || location.hostname === "127.0.0.1";
 }
 
-function setMapBackground(mapIndex) {
-  switch (parseInt(mapIndex)) {
-    default:
-    case 0:
-      $('#map').css('background-color', '#d2b790');
-      break;
-
-    case 1:
-      $('#map').css('background-color', '#d2b790');
-      break;
-
-    case 2:
-      $('#map').css('background-color', '#3d3d3d');
-      break;
-  }
-
-  $.cookie('map-layer', mapIndex, { expires: 999 });
-}
-
 function changeCursor() {
   if (Settings.isCoordsEnabled || Routes.customRouteEnabled)
     $('.leaflet-grab').css('cursor', 'pointer');
