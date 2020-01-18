@@ -2,6 +2,11 @@
     filter: grayscale(100%) saturate(200) brightness(120%) invert(90%);
     -webkit-filter: grayscale(100%) saturate(200) brightness(120%) invert(90%);
 }
+canvas.leaflet-overlay-pane {
+    filter: sepia(100%);
+    opacity: 60%;
+    -webkit-filter: sepia(100%);
+}
 
 @font-face {
     font-family: Hapna;

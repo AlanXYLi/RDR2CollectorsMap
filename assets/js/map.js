@@ -36,6 +36,10 @@ var MapBase = {
         noWrap: true,
         bounds: L.latLngBounds(L.latLng(-144, 0), L.latLng(0, 176))
       }),
+      L.tileLayer((isLocalHost() ? 'assets/maps/' : 'https://jeanropke.b-cdn.net/') + 'detailed/{z}/{x}_{y}.jpg', {
+        noWrap: true,
+        bounds: L.latLngBounds(L.latLng(-144, 0), L.latLng(0, 176))
+      }),
       L.layerGroup().addLayer(L.tileLayer('https://s.rsg.sc/sc/images/games/RDR2/map/game/{z}/{x}/{y}.jpg', {
         noWrap: true,
         bounds: L.latLngBounds(L.latLng(-144, 0), L.latLng(0, 176))
@@ -63,8 +67,9 @@ var MapBase = {
       'map.layers.default': Layers.mapLayers[0],
       'map.layers.detailed': Layers.mapLayers[1],
       'map.layers.dark': Layers.mapLayers[2],
-      'map.layers.detailedPath': Layers.mapLayers[3],
-      'map.layers.detailedPathDark': Layers.mapLayers[4],
+      'map.layers.cssDetailedDark': Layers.mapLayers[3],
+      'map.layers.detailedPath': Layers.mapLayers[4],
+      'map.layers.detailedPathDark': Layers.mapLayers[5],
     };
 
     L.control.layers(baseMapsLayers).addTo(MapBase.map);
@@ -81,12 +86,15 @@ var MapBase = {
         case 'map.layers.dark':
           MapBase.mapIndex = 2;
           break;
-        case 'map.layers.detailedPath':
+        case 'map.layers.cssDetailedDark':
         default:
           MapBase.mapIndex = 3;
           break;
-        case 'map.layers.detailedPathDark':
+        case 'map.layers.detailedPath':
           MapBase.mapIndex = 4;
+          break;
+        case 'map.layers.detailedPathDark':
+          MapBase.mapIndex = 5;
           break;
       }
 
@@ -121,19 +129,26 @@ var MapBase = {
       case 2:
         $('.leaflet-tile-pane').removeClass("dark-mode");
         $('.leaflet-overlay-pane').removeClass("dark-mode");
+        $('.leaflet-tile-pane').addClass("bright-mode");
+        $('.leaflet-overlay-pane').addClass("bright-mode");
         $('#map').css('background-color', '#3d3d3d');
         break;
-      case 4:
+      case 3:
+      case 5:
         $('.leaflet-tile-pane').addClass("dark-mode");
         $('.leaflet-overlay-pane').addClass("dark-mode");
+        $('.leaflet-tile-pane').removeClass("bright-mode");
+        $('.leaflet-overlay-pane').removeClass("bright-mode");
         $('#map').css('background-color', '#3d3d3d');
         break;
       case 0:
       case 1:
-      case 3:
+      case 4:
       default:
         $('.leaflet-tile-pane').removeClass("dark-mode");
         $('.leaflet-overlay-pane').removeClass("dark-mode");
+        $('.leaflet-tile-pane').addClass("bright-mode");
+        $('.leaflet-overlay-pane').addClass("bright-mode");
         $('#map').css('background-color', '#d2b790');
         break;
     }
@@ -144,9 +159,9 @@ var MapBase = {
 
   drawRoads: function (){
     if (Layers.roadLayer !== null) MapBase.map.removeLayer(Layers.roadLayer);
-    if (MapBase.mapIndex>=3 && PathFinder._geoJson !==null) {
+    if (MapBase.mapIndex>=4 && PathFinder._geoJson !==null) {
       let paths = PathFinder._geoJson.features;
-      let color = "#000000";
+      let color = "#323232";
       let weight = Math.pow(2, MapBase.map.getZoom()) / 12.8;
       let opacity = 1;
 
