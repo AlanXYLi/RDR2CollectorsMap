@@ -5,7 +5,6 @@ import settings
 import TOKENS
 import score
 
-
 class PostOfficerClient(discord.Client):
     def __init__(self, cycle, score_obj, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -44,12 +43,12 @@ class PostOfficerClient(discord.Client):
             return
 
         if message.content.startswith('$cycle '):
-            user_level = self.scoreboard.get(message.author.id, "reputation")[0] // 10
+            user_level = 1+self.scoreboard.get(message.author.id, "reputation")[0] // 10
             try:
                 tokens = message.content.split()[1:]
                 score_generated = 0
                 if len(tokens) == 1:
-                    score_generated = self.cycle.update(zip(settings.COLLECTIONS, tokens[0].split(",")), user_level)
+                    score_generated = self.cycle.update(zip(settings.COLLECTIONS_ORDER, tokens[0].split(",")), user_level)
                 elif len(tokens) == 2:
                     score_generated = self.cycle.update(zip(tokens[0].split(","), tokens[1].split(",")), user_level)
                 else:

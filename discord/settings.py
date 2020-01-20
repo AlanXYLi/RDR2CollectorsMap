@@ -1,4 +1,16 @@
-COLLECTIONS = [
+COLLECTION_SETTINGS = { # category: (cycle_count, score)
+    "flower": (6, 1),
+    "card": (6, 1),
+    "jewelry": (6, 1),
+    "bottle": (6, 1),
+    "egg": (6, 1),
+    "arrow": (6, 1),
+    "loom": (6, 1),
+    "coin": (6, 1),
+    "random": (6, 1),
+}
+
+COLLECTIONS_ORDER = [
     "flower",
     "card",
     "jewelry",
@@ -10,34 +22,12 @@ COLLECTIONS = [
     "random"
 ]
 
-CYCLE_COUNT = {
-    "flower":6,
-    "card":6,
-    "jewelry":6,
-    "bottle":6,
-    "egg":6,
-    "arrow":6,
-    "loom":6,
-    "coin":6,
-    "random":7
-}
-
-COLLECTION_SCORES = {
-    "flower":1,
-    "card":1,
-    "jewelry":1,
-    "bottle":1,
-    "egg":1,
-    "arrow":1,
-    "loom":1,
-    "coin":1,
-    "random":2
-}
-
+COLLECTIONS = COLLECTION_SETTINGS.keys()
+COLLECTIONS_CYCLE_COUNT = COLLECTION_SETTINGS
 
 URL_BASE = "https://jeanropke.github.io/RDR2CollectorsMap/?cycles="
 
-HELP_MSG = "Valid collection names are: " + ", ".join(COLLECTIONS) + "\n"\
+HELP_MSG = "Valid collection names are: " + ", ".join(COLLECTIONS_ORDER) + "\n"\
            "To report all of today's cycle in the order listed above: $cycle 1,2,3,4,5,6,5,4,3 \n"\
             "\t You can enter either a partial list or complete list, $cycle 1,2,3 will only update first three. \n"\
            "To report some of today's cycle: $cycle name,name,...name num,num,...num \n" \
@@ -58,3 +48,6 @@ NEED_VERIFICATION_MSG = " categories need your verification, the top two votes o
 UPDATED_MSG = "Cycle updated! {} rep added. \n"
 
 REP_MSG = "'s rep is: "
+
+if __name__ == "__main__":
+    pass

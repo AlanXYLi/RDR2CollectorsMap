@@ -25,7 +25,7 @@ class Cycle:
 
     def reset(self):
         self.cycle_votes = {}
-        for c in settings.COLLECTIONS:
+        for c in settings.COLLECTIONS_ORDER:
             self.cycle_votes[c] = {}
             for i in range(settings.CYCLE_COUNT[c]):
                 self.cycle_votes[c][str(i + 1)] = 0
@@ -61,7 +61,7 @@ class Cycle:
             "top_votes": [],
             "second_top_votes": []
         }
-        for c in settings.COLLECTIONS:
+        for c in settings.COLLECTIONS_ORDER:
             max_vote = ["0", 0]
             second_max_vote = ["0", 0]
             for cycle, count in self.cycle_votes[c].items():
@@ -77,7 +77,7 @@ class Cycle:
         needs_help = []
         needs_verification = []
 
-        for i, c in enumerate(settings.COLLECTIONS):
+        for i, c in enumerate(settings.COLLECTIONS_ORDER):
             if self.stats["top_votes"][i] == 0:
                 needs_help.append(c)
             elif self.stats["top_votes"][i] - self.stats["second_top_votes"][i] < 3:
