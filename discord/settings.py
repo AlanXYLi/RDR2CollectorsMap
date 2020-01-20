@@ -1,4 +1,6 @@
-COLLECTION_SETTINGS = { # category: (cycle_count, score)
+from datetime import timedelta, datetime
+
+COLLECTION_SETTINGS = {  # category: (cycle_count, score)
     "flower": (6, 1),
     "card": (6, 1),
     "jewelry": (6, 1),
@@ -10,24 +12,25 @@ COLLECTION_SETTINGS = { # category: (cycle_count, score)
     "random": (6, 1),
 }
 
-COLLECTIONS_ORDER = [
-    "flower",
-    "card",
-    "jewelry",
-    "bottle",
-    "egg",
-    "arrow",
-    "loom",
-    "coin",
-    "random"
-]
+COLLECTIONS = list(COLLECTION_SETTINGS.keys())
+COLLECTIONS_CYCLE_COUNT = {k: v[0] for k, v in COLLECTION_SETTINGS.items()}
+COLLECTION_SCORES = {k: v[1] for k, v in COLLECTION_SETTINGS.items()}
 
-COLLECTIONS = COLLECTION_SETTINGS.keys()
-COLLECTIONS_CYCLE_COUNT = COLLECTION_SETTINGS
+REPO_UPDATE_EVENTS = [timedelta(seconds=5)]  # first update soon after cycle reset to reset away old data
+for i in range(1, 10):
+    REPO_UPDATE_EVENTS.append(timedelta(minutes=i))  # every minute during first 10
+for i in range(10, 60, 10):
+    REPO_UPDATE_EVENTS.append(timedelta(minutes=i))  # every 10 minutes during first hour
+for i in range(60, 60 * 24, 30):
+    REPO_UPDATE_EVENTS.append(timedelta(minutes=i))  # every 30 minutes afterwards
+REPO_UPDATE_EVENTS.append(timedelta(days=1) - timedelta(minutes=5))  # final update of the day
 
-URL_BASE = "https://jeanropke.github.io/RDR2CollectorsMap/?cycles="
+ADMIN_UPDATE_QUOTA = 999
+DAILY_UPDATE_QUOTA = 20
 
-HELP_MSG = "Valid collection names are: " + ", ".join(COLLECTIONS_ORDER) + "\n"\
+URL_BASE = "https://AlanXYLi.github.io/RDR2CollectorsMap/?cycles="
+
+HELP_MSG = "Valid collection names are: " + ", ".join(COLLECTIONS) + "\n"\
            "To report all of today's cycle in the order listed above: $cycle 1,2,3,4,5,6,5,4,3 \n"\
             "\t You can enter either a partial list or complete list, $cycle 1,2,3 will only update first three. \n"\
            "To report some of today's cycle: $cycle name,name,...name num,num,...num \n" \

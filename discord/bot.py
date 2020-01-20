@@ -3,17 +3,17 @@ import discord
 from cycle import Cycle
 import settings
 import TOKENS
-import score
+from score import Scores
+
 
 class PostOfficerClient(discord.Client):
-    def __init__(self, cycle, score_obj, *args, **kwargs):
+    def __init__(self, cycle: Cycle, score: Scores, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.cycle = cycle
-        self.score_obj = score_obj
-        self.scoreboard = None
+        self.scoreboard = score
 
     def run(self, *args, **kwargs):
-        self.scoreboard = self.score_obj()
+        self.scoreboard.connect()
         super().run(*args, **kwargs)
 
     async def on_ready(self):
@@ -43,18 +43,17 @@ class PostOfficerClient(discord.Client):
             return
 
         if message.content.startswith('$cycle '):
-            user_level = 1+self.scoreboard.get(message.author.id, "reputation")[0] // 10
+            user_level = 1 + self.scoreboard.get_rep(message.author.id)[0] // 10
             try:
                 tokens = message.content.split()[1:]
-                score_generated = 0
                 if len(tokens) == 1:
-                    score_generated = self.cycle.update(zip(settings.COLLECTIONS_ORDER, tokens[0].split(",")), user_level)
+                    score_generated = self.cycle.update(zip(settings.COLLECTIONS, tokens[0].split(",")), user_level)
                 elif len(tokens) == 2:
                     score_generated = self.cycle.update(zip(tokens[0].split(","), tokens[1].split(",")), user_level)
                 else:
                     await message.channel.send(settings.ERR_MSG)
                     return
-                self.scoreboard.add_to_value(message.author.id, "reputation", score_generated)
+                self.scoreboard.add_rep(message.author.id, score_generated)
                 await message.channel.send(settings.UPDATED_MSG.format(score_generated))
                 return
             except:
@@ -75,5 +74,5 @@ class PostOfficerClient(discord.Client):
             return
 
 if __name__ == "__main__":
-    testClient = PostOfficerClient(cycle=Cycle())
+    testClient = PostOfficerClient(cycle=Cycle(), score=Scores())
     testClient.run(TOKENS.token)

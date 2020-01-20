@@ -4,12 +4,6 @@ from datetime import timedelta, datetime
 import settings
 
 
-def seconds_to_utctomorrow():
-    utc_now = datetime.utcnow()
-    utc_tomorrow = (datetime.utcnow() + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
-    return utc_tomorrow.timestamp() - utc_now.timestamp()
-
-
 class Cycle:
     def __init__(self, cycle_votes=None):
         self.cycle_votes = {}
@@ -23,25 +17,31 @@ class Cycle:
     def __str__(self):
         return str(self.cycle_votes)
 
+    def seconds_to_next_reset(self):
+        utc_now = datetime.utcnow()
+        utc_tomorrow = (datetime.utcnow() + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+        return utc_tomorrow.timestamp() - utc_now.timestamp()
+
     def reset(self):
         self.cycle_votes = {}
-        for c in settings.COLLECTIONS_ORDER:
+        for c in settings.COLLECTIONS:
             self.cycle_votes[c] = {}
-            for i in range(settings.CYCLE_COUNT[c]):
+            for i in range(settings.COLLECTIONS_CYCLE_COUNT[c]):
                 self.cycle_votes[c][str(i + 1)] = 0
         self.update_stats()
 
     def reset_loop(self):
         s = sched.scheduler(time.time, time.sleep)
+
         def loop():
-            print("Cycle reset at ", datetime.fromtimestamp(time.time()))
             self.reset()
-            next_reset_time = time.time() + seconds_to_utctomorrow()
-            print("Next reset at ", datetime.fromtimestamp(next_reset_time))
+            print("Cycle reset at ", datetime.fromtimestamp(time.time()))
+            next_reset_time = time.time() + self.seconds_to_next_reset()
+            print("Next cycle reset scheduled at ", datetime.fromtimestamp(next_reset_time))
             s.enterabs(next_reset_time, 1, loop)
 
-        first_reset_time = time.time() + seconds_to_utctomorrow()
-        print("First reset at ", datetime.fromtimestamp(first_reset_time))
+        first_reset_time = time.time() + self.seconds_to_next_reset()
+        print("First cycle reset scheduled at ", datetime.fromtimestamp(first_reset_time))
         s.enterabs(first_reset_time, 1, loop)
 
         s.run()
@@ -61,7 +61,7 @@ class Cycle:
             "top_votes": [],
             "second_top_votes": []
         }
-        for c in settings.COLLECTIONS_ORDER:
+        for c in settings.COLLECTIONS:
             max_vote = ["0", 0]
             second_max_vote = ["0", 0]
             for cycle, count in self.cycle_votes[c].items():
@@ -77,7 +77,7 @@ class Cycle:
         needs_help = []
         needs_verification = []
 
-        for i, c in enumerate(settings.COLLECTIONS_ORDER):
+        for i, c in enumerate(settings.COLLECTIONS):
             if self.stats["top_votes"][i] == 0:
                 needs_help.append(c)
             elif self.stats["top_votes"][i] - self.stats["second_top_votes"][i] < 3:
@@ -92,4 +92,3 @@ class Cycle:
 if __name__ == "__main__":
     testCycle = Cycle()
     testCycle.reset_loop()
-
