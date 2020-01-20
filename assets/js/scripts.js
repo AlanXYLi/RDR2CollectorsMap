@@ -39,7 +39,6 @@ function init() {
   wikiLanguage['fr-fr'] = 'https://github.com/jeanropke/RDR2CollectorsMap/wiki/RDO-Collectors-Map-Guide-d\'Utilisateur-(French)';
   wikiLanguage['pt-br'] = 'https://github.com/jeanropke/RDR2CollectorsMap/wiki/Guia-do-Usu%C3%A1rio---Mapa-de-Colecionador-(Portuguese)';
 
-
   var tempCollectedMarkers = "";
   //sometimes, cookies are saved in the wrong order
   var cookiesList = [];
@@ -110,23 +109,20 @@ function init() {
     $.cookie('marker-cluster', '1', { expires: 999 });
   }
 
-  var curDate = new Date();
-  date = curDate.getUTCFullYear() + '-' + (curDate.getUTCMonth() + 1) + '-' + curDate.getUTCDate();
-
-  //Reset markers daily
-  if (date != $.cookie('date')) {
-    if (Settings.resetMarkersDaily) {
-      $.each(MapBase.markers, function (key, value) {
-        if (inventory[value.text])
-          inventory[value.text].isCollected = false;
-
-        value.isCollected = false;
-        value.canCollect = value.amount < Inventory.stackSize;
-      });
-      MapBase.save();
-    }
+  if (typeof $.cookie('enable-marker-popups') === 'undefined') {
+    Settings.isPopupsEnabled = true;
+    $.cookie('enable-marker-popups', '1', { expires: 999 });
   }
-  $.cookie('date', date, { expires: 7 });
+
+  if (typeof $.cookie('enable-dclick-zoom') === 'undefined') {
+    Settings.isDoubleClickZoomEnabled = true;
+    $.cookie('enable-dclick-zoom', '1', { expires: 999 });
+  }
+
+  if (typeof $.cookie('show-help') === 'undefined') {
+    Settings.showHelp = true;
+    $.cookie('show-help', '1', { expires: 999 });
+  }
 
   MapBase.init();
   Language.setMenuLanguage();
@@ -141,16 +137,26 @@ function init() {
 
   $('#reset-markers').prop("checked", Settings.resetMarkersDaily);
   $('#marker-cluster').prop("checked", Settings.markerCluster);
+  $('#enable-marker-popups').prop("checked", Settings.isPopupsEnabled);
+  $('#enable-dclick-zoom').prop("checked", Settings.isDoubleClickZoomEnabled);
   $('#pins-place-mode').prop("checked", Settings.isPinsPlacingEnabled);
   $('#pins-edit-mode').prop("checked", Settings.isPinsEditingEnabled);
+  $('#show-help').prop("checked", Settings.showHelp);
   $('#show-coordinates').prop("checked", Settings.isCoordsEnabled);
+
+
+  if (Settings.showHelp) {
+    $("#help-container").show();
+  } else {
+    $("#help-container").hide();
+  }
 
   Pins.addToMap();
   changeCursor();
 }
 
 function isLocalHost() {
-   return location.hostname === "localhost" || location.hostname === "127.0.0.1";
+  return location.hostname === "localhost" || location.hostname === "127.0.0.1";
 }
 
 function setMapBackground(mapIndex) {
@@ -234,7 +240,7 @@ setInterval(function () {
 
   else {
     $('#time-in-game').text(addZeroToNumber(correctTime.getHours() % 12) + ":" + addZeroToNumber(correctTime.getMinutes()));
-    $('#am-pm-time').text(((correctTime.getHours() > 12) ? "PM" : "AM"));
+    $('#am-pm-time').text(((correctTime.getHours() < 12) ? "AM" : "PM"));
   }
 
   //Countdown for the next cycle
@@ -244,10 +250,14 @@ setInterval(function () {
   var seconds = 59 - nextGMTMidnight.getUTCSeconds();
   $('#countdown').text(addZeroToNumber(hours) + ':' + addZeroToNumber(minutes) + ':' + addZeroToNumber(seconds));
 
-  if (correctTime.getHours() >= 22 || correctTime.getHours() < 5)
+  if (correctTime.getHours() >= 22 || correctTime.getHours() < 5) {
     $('#day-cycle').css('background', 'url(assets/images/moon.png)');
-  else
+    $('[data-marker*="flower_agarita"], [data-marker*="flower_blood"]').css('filter', 'drop-shadow(0 0 .5rem #fff) drop-shadow(0 0 .25rem #fff)');
+  }
+  else {
     $('#day-cycle').css('background', 'url(assets/images/sun.png)');
+    $('[data-marker*="flower_agarita"], [data-marker*="flower_blood"]').css('filter', 'none');
+  }
 }, 1000);
 
 // toggle timer and clock after click the container
@@ -386,6 +396,7 @@ $("#language").on("change", function () {
 //Disable & enable collection category
 $('.clickable').on('click', function () {
   var menu = $(this);
+  if (typeof menu.data('type') === 'undefined') return;
 
   $('[data-type=' + menu.data('type') + ']').toggleClass('disabled');
   var isDisabled = menu.hasClass('disabled');
@@ -454,12 +465,12 @@ $('.collection-reset').on('click', function (e) {
 
     if (inventory[value.text])
       inventory[value.text].isCollected = false;
-    
+
     value.isCollected = false;
     value.canCollect = true;
 
     // .changeMarkerAmount() must run to check whether to remove "disabled" class
-    if (value.subdata) 
+    if (value.subdata)
       Inventory.changeMarkerAmount(value.subdata, (Inventory.resetButtonUpdatesInventory ? -1 : 0));
     else
       Inventory.changeMarkerAmount(value.text, (Inventory.resetButtonUpdatesInventory ? -1 : 0));
@@ -501,6 +512,24 @@ $('#marker-cluster').on("change", function () {
   MapBase.addMarkers();
 });
 
+$('#enable-marker-popups').on("change", function () {
+  Settings.isPopupsEnabled = $("#enable-marker-popups").prop('checked');
+  $.cookie('enable-marker-popups', Settings.isPopupsEnabled ? '1' : '0', { expires: 999 });
+
+  MapBase.map.removeLayer(Layers.itemMarkersLayer);
+  MapBase.addMarkers();
+});
+
+$('#enable-dclick-zoom').on("change", function () {
+  Settings.isDoubleClickZoomEnabled = $("#enable-dclick-zoom").prop('checked');
+  $.cookie('enable-dclick-zoom', Settings.isDoubleClickZoomEnabled ? '1' : '0', { expires: 999 });
+
+  if (Settings.isDoubleClickZoomEnabled) {
+    MapBase.map.doubleClickZoom.enable();
+  } else {
+    MapBase.map.doubleClickZoom.disable();
+  }
+});
 
 /**
  * User Pins
@@ -517,6 +546,10 @@ $('#pins-edit-mode').on("change", function () {
 
   Pins.addToMap();
 });
+
+$('#pins-place-new').on("click", function () {
+  Pins.addPinToCenter();
+})
 
 $('#pins-export').on("click", function () {
   try {
@@ -691,19 +724,13 @@ $('#generate-route-start').on("change", function () {
   var startLat = null;
   var startLng = null;
 
-  $('#generate-route-start-lat').parent().addClass('disabled');
-  $('#generate-route-start-lat').prop('disabled', true);
-
-  $('#generate-route-start-lng').parent().addClass('disabled');
-  $('#generate-route-start-lng').prop('disabled', true);
+  $('#generate-route-start-lat').parent().hide();
+  $('#generate-route-start-lng').parent().hide();
 
   switch (inputValue) {
     case "Custom":
-      $('#generate-route-start-lat').parent().removeClass('disabled');
-      $('#generate-route-start-lat').prop('disabled', false);
-
-      $('#generate-route-start-lng').parent().removeClass('disabled');
-      $('#generate-route-start-lng').prop('disabled', false);
+      $('#generate-route-start-lat').parent().show();
+      $('#generate-route-start-lng').parent().show();
       return;
 
     case "N":
@@ -762,6 +789,20 @@ $('#generate-route-use-pathfinder').on("change", function () {
   Routes.usePathfinder = $("#generate-route-use-pathfinder").prop('checked');
   $.cookie('generator-path-use-pathfinder', Routes.usePathfinder ? '1' : '0', { expires: 999 });
 
+  // Hide incompatible options.
+  if (Routes.usePathfinder) {
+    $('#generate-route-distance').parent().hide();
+    $('#generate-route-auto-update').parent().parent().hide();
+    $('#generate-route-allow-fasttravel').parent().parent().show();
+  } else {
+    $('#generate-route-distance').parent().show();
+    $('#generate-route-auto-update').parent().parent().show();
+    $('#generate-route-allow-fasttravel').parent().parent().hide();
+  }
+
+  // Prevent both routes being stuck on screen.
+  Routes.clearPath();
+
   Routes.generatePath();
 });
 
@@ -785,6 +826,26 @@ $('#detailed-loot-modal').on('show.bs.modal', function (event) {
   if (table == 'unknown') table = null;
   modal.find('.modal-body').html(Loot.generateTable(table));
 })
+
+/**
+ * Tutorial logic
+ */
+$('[data-help]').hover(function (e) {
+  $('#help-container p').text(Language.get(`help.${$(this).data('help')}`));
+}, function () {
+  $('#help-container p').text(Language.get(`help.default`));
+});
+
+$('#show-help').on("change", function () {
+  Settings.showHelp = $("#show-help").prop('checked');
+  $.cookie('show-help', Settings.isHelpEnabled ? '1' : '0', { expires: 999 });
+
+  if (Settings.showHelp) {
+    $("#help-container").show();
+  } else {
+    $("#help-container").hide();
+  }
+});
 
 /**
  * Leaflet plugins

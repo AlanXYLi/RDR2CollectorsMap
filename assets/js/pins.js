@@ -9,6 +9,9 @@ var Pins = {
     },
 
     addPin: function (lat, lng, id = null, name = null, desc = null, icon = null, doSave = true) {
+        var pinAtPositionExists = this.pinsList.some(function (marker) { return marker._latlng.lat == lat && marker._latlng.lng == lng; });
+        if (pinAtPositionExists) return;
+
         var icon = icon == null ? 'pin' : icon;
         var marker = L.marker([lat, lng], {
             id: id == null ? this.generatePinHash(`${lat}_${lng}_${Date.now()}`) : id,
@@ -36,6 +39,11 @@ var Pins = {
         Layers.pinsLayer.addLayer(marker);
 
         if (doSave) this.saveAllPins();
+    },
+
+    addPinToCenter: function () {
+        var center = MapBase.map.getCenter();
+        this.addPin(center.lat, center.lng);
     },
 
     savePin: function (id, name, desc, icon) {

@@ -60,7 +60,7 @@ var Inventory = {
       $(`[data-type=${name}] .counter-number`).text(marker[0].amount);
 
       //If the category is disabled, no needs to update popup
-      if (Layers.itemMarkersLayer.getLayerById(_m.text) != null && _m.day == Cycles.data.cycles[Cycles.data.current][_m.category])
+      if (Settings.isPopupsEnabled && Layers.itemMarkersLayer.getLayerById(_m.text) != null && _m.day == Cycles.data.cycles[Cycles.data.current][_m.category])
         Layers.itemMarkersLayer.getLayerById(_m.text)._popup.setContent(MapBase.updateMarkerContent(_m));
     });
 
@@ -72,35 +72,17 @@ var Inventory = {
 
   toggleMenuItemsDisabled: function () {
     if (!Inventory.isEnabled) {
-      $('#enable-inventory-popups').parent().parent().addClass('disabled');
-      $('#enable-inventory-popups').prop('disabled', true);
-      
-      $('#enable-inventory-menu-update').parent().parent().addClass('disabled');
-      $('#enable-inventory-menu-update').prop('disabled', true);
-
-      $('#reset-collection-updates-inventory').parent().parent().addClass('disabled');
-      $('#reset-collection-updates-inventory').prop('disabled', true);
-
-      $('#inventory-stack').parent().addClass('disabled');
-      $('#inventory-stack').prop('disabled', true);
-
-      $('[data-target="#clear-inventory-modal"]').addClass('disabled');
-      $('[data-target="#clear-inventory-modal"]').prop('disabled', true);
+      $('#enable-inventory-popups').parent().parent().hide();
+      $('#enable-inventory-menu-update').parent().parent().hide();
+      $('#reset-collection-updates-inventory').parent().parent().hide();
+      $('#inventory-stack').parent().hide();
+      $('[data-target="#clear-inventory-modal"]').hide();
     } else {
-      $('#enable-inventory-popups').parent().parent().removeClass('disabled');
-      $('#enable-inventory-popups').prop('disabled', false);
-      
-      $('#enable-inventory-menu-update').parent().parent().removeClass('disabled');
-      $('#enable-inventory-menu-update').prop('disabled', false);
-
-      $('#reset-collection-updates-inventory').parent().parent().removeClass('disabled');
-      $('#reset-collection-updates-inventory').prop('disabled', false);
-
-      $('#inventory-stack').parent().removeClass('disabled');
-      $('#inventory-stack').prop('disabled', false);
-      
-      $('[data-target="#clear-inventory-modal"]').removeClass('disabled');
-      $('[data-target="#clear-inventory-modal"]').prop('disabled', false);
+      $('#enable-inventory-popups').parent().parent().show();
+      $('#enable-inventory-menu-update').parent().parent().show();
+      $('#reset-collection-updates-inventory').parent().parent().show();
+      $('#inventory-stack').parent().show();
+      $('[data-target="#clear-inventory-modal"]').show();
     }
   }
 }
