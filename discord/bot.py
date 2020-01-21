@@ -47,9 +47,9 @@ class PostOfficerClient(discord.Client):
             try:
                 tokens = message.content.split()[1:]
                 if len(tokens) == 1:
-                    score_generated = self.cycle.update(zip(settings.COLLECTIONS, tokens[0].split(",")), user_level)
+                    score_generated = self.cycle.report(zip(settings.COLLECTIONS, tokens[0].split(",")), user_level)
                 elif len(tokens) == 2:
-                    score_generated = self.cycle.update(zip(tokens[0].split(","), tokens[1].split(",")), user_level)
+                    score_generated = self.cycle.report(zip(tokens[0].split(","), tokens[1].split(",")), user_level)
                 else:
                     await message.channel.send(settings.ERR_MSG)
                     return

@@ -3,13 +3,13 @@ import time
 from datetime import timedelta, datetime
 import os
 
+
 from cycle import Cycle
 import settings
 
 
 class RepoUpdater:
-    def __init__(self, cycle: Cycle, update_cmd_file="update_script"):
-        self.update_cmd_file = update_cmd_file
+    def __init__(self, cycle: Cycle):
         self.last_top_choices = None
         self.cycle = cycle
 
@@ -20,20 +20,14 @@ class RepoUpdater:
         for event in settings.REPO_UPDATE_EVENTS:
             if event + utc_today > utc_now:
                 return (event - now_delta).total_seconds()
-        return None
+        return (settings.REPO_UPDATE_EVENTS[0] + (timedelta(days=1) - settings.REPO_UPDATE_EVENTS[-1])).total_seconds()
 
     def update(self):
         if self.cycle_changed():
             print("Cycle changed, Updating")
-            self.write_cycle()
-            with open(self.update_cmd_file) as fd:
-                cmd = fd.read()
-            cmd = cmd.format(datetime.utcnow())
+            self.cycle.write_cycle()
+            cmd = settings.REPO_UPDATE_SCRIPT.format(self.cycle.cycle_file, datetime.utcnow())
             return os.system(cmd)
-
-    def write_cycle(self):
-        pass
-        #TODO: write cycle data in correct file
 
     def cycle_changed(self):
         if str(self.cycle.stats["top_choices"]) != self.last_top_choices:

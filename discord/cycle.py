@@ -2,12 +2,14 @@ import sched
 import time
 from datetime import timedelta, datetime
 import settings
+import json
 
 
 class Cycle:
-    def __init__(self, cycle_votes=None):
+    def __init__(self, cycle_votes=None, cycle_file="../data/cycles.json"):
         self.cycle_votes = {}
         self.stats = {}
+        self.cycle_file = cycle_file
         if cycle_votes:
             self.cycle_votes = cycle_votes
             self.update_stats()
@@ -46,7 +48,33 @@ class Cycle:
 
         s.run()
 
-    def update(self, response_tuples, user_level):
+    def write_cycle(self):
+        self.update_stats()
+        with open(self.cycle_file) as fd:
+            cycle_data = json.load(fd)
+        cycle_data["updated_at"] = str(datetime.utcnow().strftime("%B %d")).lower()
+        cycle_data["cycles"]["999"] = {
+            'american_flowers': self.stats["top_choices"][0],
+            'antique_bottles': self.stats["top_choices"][3],
+            'arrowhead': self.stats["top_choices"][5],
+            'bird_eggs': 1,
+            'coin': self.stats["top_choices"][7],
+            'family_heirlooms': self.stats["top_choices"][6],
+            'lost_bracelet': self.stats["top_choices"][2],
+            'lost_earrings': self.stats["top_choices"][2],
+            'lost_necklaces': self.stats["top_choices"][2],
+            'lost_ring': self.stats["top_choices"][2],
+            'card_cups': self.stats["top_choices"][1],
+            'card_pentacles': self.stats["top_choices"][1],
+            'card_swords': self.stats["top_choices"][1],
+            'card_wands': self.stats["top_choices"][1],
+            'random': self.stats["top_choices"][8]}
+        cycle_data["cycles"]["998"] = cycle_data["cycles"]["1"]
+        cycle_data["current"] = "999"
+        with open(self.cycle_file, "w") as fd:
+            fd.write(json.dumps(cycle_data, indent=4))
+
+    def report(self, response_tuples, user_level):
         score = 0
         for c, vote in response_tuples:
             self.cycle_votes[c][vote] += user_level
@@ -90,5 +118,17 @@ class Cycle:
 
 
 if __name__ == "__main__":
-    testCycle = Cycle()
+    testVotes = {'flower': {'1': 3, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0},
+                 'card': {'1': 0, '2': 5, '3': 0, '4': 0, '5': 0, '6': 0},
+                 'jewelry': {'1': 0, '2': 6, '3': 8, '4': 0, '5': 0, '6': 0},
+                 'bottle': {'1': 0, '2': 0, '3': 0, '4': 10, '5': 0, '6': 0},
+                 'egg': {'1': 0, '2': 0, '3': 0, '4': 0, '5': 1, '6': 0},
+                 'arrow': {'1': 0, '2': 0, '3': 0, '4': 0, '5': 2, '6': 0},
+                 'loom': {'1': 0, '2': 0, '3': 0, '4': 0, '5': 3, '6': 0},
+                 'coin': {'1': 0, '2': 0, '3': 0, '4': 0, '5': 4, '6': 0},
+                 'random': {'1': 0, '2': 0, '3': 0, '4': 0, '5': 5, '6': 0}}
+
+    testCycle = Cycle(testVotes)
+    testCycle.write_cycle()
     testCycle.reset_loop()
+

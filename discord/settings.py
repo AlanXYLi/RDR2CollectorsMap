@@ -1,5 +1,8 @@
 from datetime import timedelta, datetime
+import locale
 
+
+locale.setlocale(locale.LC_ALL, 'en_US')
 COLLECTION_SETTINGS = {  # category: (cycle_count, score)
     "flower": (6, 1),
     "card": (6, 1),
@@ -24,6 +27,12 @@ for i in range(10, 60, 10):
 for i in range(60, 60 * 24, 30):
     REPO_UPDATE_EVENTS.append(timedelta(minutes=i))  # every 30 minutes afterwards
 REPO_UPDATE_EVENTS.append(timedelta(days=1) - timedelta(minutes=5))  # final update of the day
+
+REPO_UPDATE_SCRIPT = """
+git add {0}
+git commit -m "Bot auto update at {1}"
+git push
+"""
 
 ADMIN_UPDATE_QUOTA = 999
 DAILY_UPDATE_QUOTA = 20
