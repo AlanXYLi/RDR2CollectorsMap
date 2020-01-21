@@ -4,7 +4,7 @@
 
 var Menu = {
   reorderMenu: function (menu) {
-    $(menu).children().sort(function (a, b) { 
+    $(menu).children().sort(function (a, b) {
       return a.textContent.toLowerCase().localeCompare(b.textContent.toLowerCase());
     }).appendTo(menu);
   },
@@ -132,7 +132,7 @@ Menu.refreshMenu = function () {
         if (!marker.canCollect)
           $(`[data-type=${marker.text}]`).addClass('disabled');
       }
-      
+
       // set green color of weekly collection items
       $.each(weeklyItems, function (key, weeklyItem) {
         if (`flower_${marker.subdata}` == weeklyItem.item || `egg_${marker.subdata}` == weeklyItem.item)
@@ -147,11 +147,20 @@ Menu.refreshMenu = function () {
   $('.menu-hidden[data-type]').each(function (key, value) {
     var category = $(this);
 
-    if (category.data('type').includes('card_')) return;
     if (category.data('type') == 'treasure') return;
 
+    // if the cycle is the same as yesterday highlight category in menu;
+    var hasCycleWarning = $(`[data-text="menu.${category.data('type')}"] .same-cycle-warning-menu`).length;
+    if (Cycles.isSameAsYesterday(category.data('type')) && !hasCycleWarning) {
+      $(`[data-text="menu.${category.data('type')}"]`).append(`<img class="same-cycle-warning-menu" src="./assets/images/same-cycle-alert.png">`);
+    } else if (hasCycleWarning) {
+      $(`[data-text="menu.${category.data('type')}"] .same-cycle-warning-menu`).remove();
+    }
+
+    if (category.data('type').includes('card_')) return;
+
     var children = category.children('.collectible-wrapper');
-    
+
     children.sort(function (a, b) {
       return a.innerText.toLowerCase().localeCompare(b.innerText.toLowerCase());
     }).appendTo(this);
@@ -175,7 +184,7 @@ Menu.showAll = function () {
   });
 
   enabledCategories = categories;
-  
+
   MapBase.addMarkers();
 };
 
@@ -206,7 +215,5 @@ Menu.liveUpdateDebugMarkersInputs = function (lat, lng) {
 }
 // Auto remove debug markers coordinates when "show coordinates on click" is disabled
 $('#show-coordinates').on('change', function () {
-  $('#debug-marker-lat').val('');
-  $('#debug-marker-lng').val('');
-  $('#debug-marker-name').val('');
+  $('#debug-marker-lat, #debug-marker-lng, #debug-marker-name').val('');
 });
