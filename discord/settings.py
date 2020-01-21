@@ -28,6 +28,10 @@ for i in range(60, 60 * 24, 30):
     REPO_UPDATE_EVENTS.append(timedelta(minutes=i))  # every 30 minutes afterwards
 REPO_UPDATE_EVENTS.append(timedelta(days=1) - timedelta(minutes=5))  # final update of the day
 
+REPO_UPDATE_EVENTS = []
+for i in range(1, 60 * 24):
+    REPO_UPDATE_EVENTS.append(timedelta(minutes=i))
+
 REPO_UPDATE_SCRIPT = """
 git add {0}
 git commit -m "Bot auto update at {1}"
