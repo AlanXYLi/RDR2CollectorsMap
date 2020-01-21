@@ -155,8 +155,8 @@ function init() {
   changeCursor();
 }
 
-function isLocalHost() {
-  return location.hostname === "localhost" || location.hostname === "127.0.0.1";
+function isNotJeanGithubPage() {
+  return location.hostname !== "jeanropke.github.io";
 }
 
 function setMapBackground(mapIndex) {
